@@ -1,0 +1,121 @@
+﻿@page "/provincia"
+@inject IDataAccess _data
+@inject IConfiguration _config
+
+
+
+<MudContainer>
+    <MudItem sm="12">
+        <EditForm Model="@OProvincia" OnValidSubmit="InsertData">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+            <MudCard>
+                <MudCardHeader>
+                    <MudCardContent>
+                        <MudText Align="Align.Center" Typo="Typo.h5"> <MudIcon Icon="@Icons.Material.Filled.LocationCity" Size="Size.Large"></MudIcon>Provincia</MudText>
+                    </MudCardContent>
+                </MudCardHeader>
+                <MudCardContent>
+                    <MudGrid>
+                        <MudItem sm="6" md="4">
+                            <MudTextField @bind-Value="@OProvincia.Nombre" Label="Provincia" Variant="Variant.Text" Required="true"></MudTextField>
+                        </MudItem>
+                        <MudItem sm="6" md="4">
+                            <MudButton OnClick="InsertData" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Save" IconColor="Color.Info" Size="Size.Small" Disabled="ModoEditar">Guardar</MudButton>
+                            <MudButton OnClick="UpdateData" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Edit" IconColor="Color.Info" Size="Size.Small" Disabled="@(ModoEditar != true? true:false)">Editar</MudButton>
+
+                        </MudItem>
+                    </MudGrid>
+                </MudCardContent>
+            </MudCard>
+        </EditForm>
+    </MudItem>
+    <MudItem sm="12">
+        @if (provincias == null)
+        {
+            <MudProgressCircular Color="Color.Info" Indeterminate="true" />
+        }
+        else
+        {
+
+            <MudTable Items="@provincias" Hover="true" FixedFooter="false" FixedHeader="true" RowsPerPage="5">
+                <ToolBarContent>
+
+                    <MudSpacer />
+                </ToolBarContent>
+                <HeaderContent>
+                    <MudTh>Nombre</MudTh>
+                    <MudTh>Acciones</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd DataLabel="Nombre">@context.Nombre</MudTd>
+                    <MudTd DataLabel="Acciones">
+                        <MudIconButton OnClick="()=> LoadEditar(context.Id)" Icon="@Icons.Material.Filled.Edit" Size="Size.Small" Class="ma-2" Disabled="ModoEditar"></MudIconButton>
+                        <MudIconButton OnClick="()=> DeleteData(context)" Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Class="ma-2" Disabled="ModoEditar"></MudIconButton>
+                    </MudTd>
+                </RowTemplate>
+                <PagerContent>
+                    <MudTablePager PageSizeOptions="new int[] {5}" />
+                </PagerContent>
+            </MudTable>
+
+        }
+    </MudItem>
+
+
+</MudContainer>
+<MudDivider DividerType="DividerType.Middle" Class="my-6" />
+
+
+
+@code {
+
+
+    private bool _hidePosition;
+    private bool _loading;
+    private ProvinciaModel OProvincia = new();
+
+    private static bool ModoEditar = false;
+
+    List<dynamic> provincias;
+
+    int AnswerServer;
+
+    private async Task LoadEditar(int Id)
+    {
+        string query = "SELECT * FROM PROVINCIA WHERE Id = @Id";
+
+        OProvincia = await _data.LoadObject<ProvinciaModel, dynamic>(query, new { Id = Id }, _config.GetConnectionString("default"));
+
+        ModoEditar = true;
+    }
+
+    private async Task InsertData()
+    {
+        string query = "INSERT INTO Provincia (Nombre) Values(@Nombre)";
+        AnswerServer = await _data.SaveData<dynamic>(query, OProvincia, _config.GetConnectionString("default"));
+        await OnInitializedAsync();
+    }
+
+    private async Task UpdateData()
+    {
+        string query = $"UPDATE PROVINCIA SET Nombre = '{OProvincia.Nombre.ToString()}' Where Id = {Convert.ToInt32(OProvincia.Id)} ";
+        AnswerServer = await _data.SaveData<dynamic>(query, new { }, _config.GetConnectionString("default"));
+        await OnInitializedAsync();
+
+        ModoEditar = false;
+    }
+
+    private async Task DeleteData(dynamic Provincia)
+    {
+        string query = "DELETE PROVINCIA WHERE Id = @Id";
+        AnswerServer = await _data.SaveData(query, new { Id = Provincia.Id }, _config.GetConnectionString("default"));
+        await OnInitializedAsync();
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        string query = "SELECT Id, Nombre FROM PROVINCIA";
+        provincias = await _data.LoadData<dynamic, dynamic>(query, new { }, _config.GetConnectionString("default"));
+    }
+}

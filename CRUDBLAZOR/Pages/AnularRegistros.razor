@@ -1,0 +1,128 @@
+﻿@page "/anularegistros"
+@inject IDataAccess _data
+@inject IConfiguration _config
+
+
+
+
+
+<MudContainer>
+
+
+
+    <MudItem>
+        <MudContainer MaxWidth="MaxWidth.Large">
+            <EditForm Model="CedulaFiltro" OnSubmit="()=>LoadObjects(CedulaFiltro)">
+                <DataAnnotationsValidator />
+                <MudCard>
+                    <MudCardHeader>
+                        <MudCardHeader>
+                            <MudText Typo="Typo.h5">Anular Registro</MudText>
+                        </MudCardHeader>
+                    </MudCardHeader>
+                    <MudCardContent>
+                        <MudGrid>
+                            <MudItem sm="12">
+                                <MudTextField @bind-Value="CedulaFiltro" Label="Cedula" Variant="Variant.Text" Required="true" RequiredError="El campo cedula es requerido!"></MudTextField>
+                            </MudItem>
+                            <MudItem sm="12">
+                                <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Info" FullWidth="true">Buscar Vacunaciones Por Cedula</MudButton>
+                            </MudItem>
+                        </MudGrid>
+                    </MudCardContent>
+                </MudCard>
+            </EditForm>
+            <MudDivider DividerType="DividerType.Middle" Class="my-6" />
+        </MudContainer>
+    </MudItem>
+
+    <MudItem sm="12" xs="12">
+        @if (personavacunas != null)
+        {
+            <MudTable Items="@personavacunas" Hover="true" FixedFooter="false" FixedHeader="true" RowsPerPage="5">
+                <ToolBarContent>
+
+                    <MudSpacer />
+                </ToolBarContent>
+                <HeaderContent>
+                    <MudTh>Cedula</MudTh>
+                    <MudTh>Nombres</MudTh>
+                    <MudTh>Telefono</MudTh>
+                    <MudTh>Vacuna Aplicada</MudTh>
+                    <MudTh>Provincia</MudTh>
+                    <MudTh>Fecha</MudTh>
+                    <MudTh>Accion</MudTh>
+
+
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd DataLabel="Cedula">@context.Cedula</MudTd>
+                    <MudTd DataLabel="Nombres">@context.Nombres</MudTd>
+                    <MudTd DataLabel="Telefono">@context.Telefono</MudTd>
+                    <MudTd DataLabel="Vacuna Aplicada">@context.VacunaAplicada</MudTd>
+                    <MudTd DataLabel="Fecha">@context.Provincia</MudTd>
+                    <MudTd DataLabel="Fecha">@context.Fecha</MudTd>
+                    <MudTd DataLabel="Acciones">
+                        <MudIconButton OnClick="()=> DeleteData(context)" Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Class="ma-2"></MudIconButton>
+
+                    </MudTd>
+
+                </RowTemplate>
+                <PagerContent>
+                    <MudTablePager />
+                </PagerContent>
+            </MudTable>
+        }
+
+    </MudItem>
+</MudContainer>
+
+
+
+
+
+
+
+@code {
+    string CedulaFiltro = "";
+    private static bool ExistPersona = false;
+    static List<dynamic> personavacunas;
+
+    int AnswerServer;
+
+    private async Task LoadObjects(string Cedula)
+    {
+
+        string query = $"SELECT dbo.ufcExistePersona (@Cedula)";
+
+        int AnswerServer = await _data.LoadObject<int, dynamic>(query, new { Cedula = Cedula }, _config.GetConnectionString("default"));
+
+        ExistPersona = true;
+
+        if (AnswerServer == 1)
+        {
+            query = "SELECT * FROM uvwPersonaVacuna WHERE Cedula = @Cedula ";
+
+            personavacunas = await _data.LoadData<dynamic, dynamic>(query, new { Cedula = Cedula }, _config.GetConnectionString("default"));
+
+        }
+        else
+        {
+            //persona = new();
+            //OPersonaVacuna = new();
+
+            //OPersonaVacuna.Persona.Cedula = Cedula;
+            //ExistPersona = false;
+        }
+    }
+
+    private async Task DeleteData(dynamic Persona)
+    {
+        string query = "DELETE PERSONA_VACUNA WHERE Id= @Id";
+        AnswerServer = await _data.SaveData(query, new { Id = Persona.Id }, _config.GetConnectionString("default"));
+        personavacunas = null;
+    }
+
+}
+
+

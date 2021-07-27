@@ -1,0 +1,113 @@
+﻿@page "/vacuna"
+
+@inject IDataAccess _data
+@inject IConfiguration _config
+
+
+<MudContainer>
+    <MudItem>
+        <MudContainer>
+            <MudItem>
+
+                <EditForm Model="@OVacuna" OnValidSubmit="InsertData">
+                    <DataAnnotationsValidator />
+
+                    <MudCard>
+                        <MudCardHeader>
+                            <CardHeaderContent>
+                                <MudText  Typo="Typo.h5"> <MudIcon Icon="@Icons.Material.Filled.LocalHospital" Size="Size.Large"></MudIcon>Registro de Vacunas</MudText>
+                            </CardHeaderContent>
+                        </MudCardHeader>
+                        <MudCardContent>
+                            <MudGrid>
+                                <MudItem sm="6" md="4">
+                                    <MudTextField @bind-Value="OVacuna.Marca" Label="Marca" Variant="Variant.Text" Required="true"></MudTextField>
+                                </MudItem>
+                                <MudItem sm="6" md="4">
+                                    <MudButton OnClick="InsertData" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Save" IconColor="Color.Info" Size="Size.Small">Guardar</MudButton>
+                                </MudItem>
+                            </MudGrid>
+                        </MudCardContent>
+                    </MudCard>
+                </EditForm>
+            </MudItem>
+            <MudItem>
+
+
+            </MudItem>
+        </MudContainer>
+
+    </MudItem>
+
+    @if (vacunas == null)
+    {
+        <MudProgressCircular Color="Color.Info" Indeterminate="true" />
+    }
+    else
+    {
+
+        <MudTable Items="@vacunas" Hover="true" FixedFooter="false" FixedHeader="true" RowsPerPage="5">
+            <ToolBarContent>
+
+                <MudSpacer />
+            </ToolBarContent>
+            <HeaderContent>
+                <MudTh>Marca</MudTh>
+                <MudTh>Acciones</MudTh>
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd DataLabel="Nombre">@context.Marca</MudTd>
+                <MudTd DataLabel="Acciones">
+                    <MudIconButton OnClick="()=> DeleteData(context)" Icon="@Icons.Material.Filled.Delete" Size="Size.Small" Class="ma-2"></MudIconButton>
+                </MudTd>
+            </RowTemplate>
+            <PagerContent>
+                <MudTablePager PageSizeOptions="new int[] {5}" />
+            </PagerContent>
+        </MudTable>
+
+    }
+</MudContainer>
+
+
+
+
+
+
+
+@code {
+
+    private VacunaModel OVacuna = new();
+
+    List<dynamic> vacunas;
+    int AnswerServer;
+
+    private bool dense = false;
+    private bool hover = true;
+    private bool striped = false;
+    private bool bordered = false;
+
+
+    private async Task InsertData()
+    {
+        string query = "SP_AGREGAR_VACUNA @Marca";
+        AnswerServer = await _data.SaveData<dynamic>(query, OVacuna, _config.GetConnectionString("default"));
+        await OnInitializedAsync();
+        OVacuna.Marca = "";
+    }
+
+    private async Task DeleteData(dynamic Vacuna)
+    {
+        string query = "DELETE FROM VACUNA WHERE Id = @Id";
+        AnswerServer = await _data.SaveData(query, new { Id = Vacuna.Id }, _config.GetConnectionString("default"));
+        await OnInitializedAsync();
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        string query = "SELECT * FROM VACUNA";
+        vacunas = await _data.LoadData<dynamic, dynamic>(query, new { }, _config.GetConnectionString("default"));
+    }
+
+
+}

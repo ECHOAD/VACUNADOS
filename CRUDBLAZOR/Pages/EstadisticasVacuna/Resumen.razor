@@ -1,0 +1,109 @@
+﻿@page "/resumen"
+@inherits ResumenEstadisticosBase
+
+@if (AllLoaded)
+{
+    
+    <MudText Class="mt-1"  Typo="Typo.h3">Estadistica <MudIcon Icon="@Icons.Material.Filled.Timeline" Size="Size.Large"></MudIcon></MudText>
+
+
+    <MudGrid Class="mt-3">
+        <MudItem xs="12" sm="6" md="6">
+            <MudPaper Elevation="2" Class="pa-4">
+                <MudText Align="Align.Center" Typo="Typo.h5"><b><MudIcon Icon="@Icons.Material.Filled.PieChart" Size="Size.Large"></MudIcon>VACUNAS POR MARCA</b></MudText>
+                <MudChart ChartType="ChartType.Donut" InputData="@data" @bind-SelectedIndex="Index" LegendPosition="Position.Right" InputLabels="@labels" Width="200px" Height="361px" />
+
+
+            </MudPaper>
+
+
+        </MudItem>
+        <MudItem xs="12" sm="6">
+            <MudTable Items="@VacunadosSignos" Hover="true" FixedFooter="false" FixedHeader="true" RowsPerPage="5">
+                <ToolBarContent>
+                    <MudText Align="Align.Center" Typo="Typo.h5"> <MudIcon Icon="@Icons.Material.Filled.Brightness3" Size="Size.Large"></MudIcon><b>VACUNAS POR SIGNO ZODIACALES</b></MudText>
+                    <MudSpacer />
+                </ToolBarContent>
+                <HeaderContent>
+                    <MudTh>Signo</MudTh>
+                    <MudTh>Cantidad</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd DataLabel="Nr">@context.Nombre</MudTd>
+                    <MudTd DataLabel="Sign">@context.Cant_vacunados</MudTd>
+                </RowTemplate>
+                <PagerContent>
+                    <MudTablePager PageSizeOptions="new int[] {5}" />
+                </PagerContent>
+            </MudTable>
+        </MudItem>
+        <MudItem xs="12" sm="12" md="12">
+
+            <MudPaper Elevation="2" Class="pa-4">
+                <MudGrid>
+                    <MudItem sm="12" xs="12">
+                        <MudText Align="Align.Center" Typo="Typo.h5"><b>VACUNAS POR PROVINCIA</b></MudText>
+                        <MudSelect T="string" Label="Provincia" @bind-Text="Id_provincia" ValueChanged="() => ListarVacunadosProv()">
+                            @foreach (var cb in _cboProvincia)
+                            {
+                                <MudSelectItem T="string" Value="Convert.ToString(cb.Id)">@cb.Nombre</MudSelectItem>
+
+                            }
+
+                        </MudSelect>
+                    </MudItem>
+                    <MudItem sm="12" xs="12" >
+                        @if (VacunadosProv != null)
+                        {
+                            <MudTable Items="@VacunadosProv" Hover="true" FixedFooter="false" FixedHeader="true" RowsPerPage="5"  >
+                                <ToolBarContent>
+
+                                    <MudSpacer />
+                                </ToolBarContent>
+                                <HeaderContent>
+                                    <MudTh>Cedula</MudTh>
+                                    <MudTh>Nombres</MudTh>
+                                    <MudTh>Apellido</MudTh>
+                                    <MudTh>Telefono</MudTh>
+                                    <MudTh>Vacuna Aplicada</MudTh>
+                                    <MudTh>Fecha</MudTh>
+                                    <MudTh>Vacuna</MudTh>
+                                </HeaderContent>
+                                <RowTemplate>
+
+
+
+                                    <MudTd DataLabel="Cedula">@context.Cedula</MudTd>
+                                    <MudTd DataLabel="Nombres">@context.Nombre</MudTd>
+                                    <MudTd DataLabel="Apellido">@context.Apellido</MudTd>
+                                    <MudTd DataLabel="Telefono">@context.Telefono</MudTd>
+                                    <MudTd DataLabel="Vacuna Aplicada">@context.Fecha</MudTd>
+                                    <MudTd DataLabel="Fecha">@context.Fecha</MudTd>
+                                    <MudTd DataLabel="Fecha">@context.Marca</MudTd>
+
+
+
+
+
+
+
+                                </RowTemplate>
+                                <PagerContent>
+                                    <MudTablePager PageSizeOptions="new int[] {5}" />
+                                </PagerContent>
+                            </MudTable>
+                        }
+
+                    </MudItem>
+
+
+                </MudGrid>
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
+
+}
+
+
+
+
